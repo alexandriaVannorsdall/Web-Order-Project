@@ -22,18 +22,18 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // Define the route group for the Order resource
 Route::prefix('orders')->group(function () {
 
-    // POST route to create a new order
-    Route::post('/', [OrderController::class, 'store'])->name('orders.store');
-
     // GET route to list all orders
     Route::get('/', [OrderController::class, 'index'])->name('orders.index');
 
-    // GET route to show a specific order by id
+    // POST route to create a new order
+    Route::post('/', [OrderController::class, 'store'])->name('orders.store');
+
+    // GET route to show a specific order by its reference
     Route::get('/{order}', [OrderController::class, 'show'])->name('orders.show');
 
-    // PUT/PATCH route to update a specific order by id
+    // PUT/PATCH route to update a specific order by reference
     Route::match(['put', 'patch'], '/{order}', [OrderController::class, 'update'])->name('orders.update');
 
-    // DELETE route to delete a specific order by id
+    // DELETE route to delete a specific order by ID
     Route::delete('/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
 });

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -18,6 +19,26 @@ class OrderController extends Controller
     {
         $orders = Order::all();
         return response()->json($orders);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'reference' => 'required|string|unique:orders',
+            'customer' => 'required|string',
+            'email' => 'required|email',
+            'name' => 'required|string',
+        ]);
+
+        // Using new Order instance and save() instead of create()
+        $order = new Order($data);
+        $order->save();
+
+        return response()->json($order, 201); // 201 Created
     }
 
     /**
@@ -48,7 +69,6 @@ class OrderController extends Controller
         $validatedData = $request->validate([
             'customer_name' => 'required|max:255',
             'order_date' => 'required|date',
-            // Add other fields and validation rules as needed
         ]);
 
         try {
@@ -73,7 +93,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Delete and existing order
+     * Delete and existing order by ID
      *
      * @param Order $order
      * @return JsonResponse
