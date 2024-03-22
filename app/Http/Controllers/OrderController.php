@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -67,8 +66,8 @@ class OrderController extends Controller
     {
         // Validate the incoming request data
         $validatedData = $request->validate([
-            'customer_name' => 'required|max:255',
-            'order_date' => 'required|date',
+            'customer' => 'required|max:255',
+            'reference' => 'required|string',
         ]);
 
         try {

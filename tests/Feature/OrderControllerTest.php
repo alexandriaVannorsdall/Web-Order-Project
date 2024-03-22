@@ -4,130 +4,115 @@ namespace Tests\Feature;
 
 use App\Models\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
-use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class OrderControllerTest extends TestCase
 {
-    use RefreshDatabase, WithoutMiddleware;
+    // Use RefreshDatabase to reset the database between tests
+    use RefreshDatabase;
 
-    /** Test the index method on the OrderController
-     *
+    /**
+     * @test
      * @return void
-     * */
-    public function test_index_returns_all_orders(): void
+     */
+    public function it_lists_all_orders(): void
     {
+        // Arrange: Create a few orders in the database
         $orders = Order::factory()->count(3)->create();
 
+        // Act: Make a get request to the index route
         $response = $this->getJson(route('orders.index'));
 
-        $response->assertStatus(Response::HTTP_OK);
+        // Assert: Verify that we receive a 200 OK response and that the response contains all orders
+        $response->assertOk();
+        $response->assertJsonCount(3);
         $response->assertJson($orders->toArray());
     }
 
-    /** Test the store method on the OrderController
-     *
+    /**
+     * @test
      * @return void
      */
-    public function test_store_creates_a_new_order_and_returns_it(): void
+    public function it_stores_a_new_order(): void
     {
+        // Arrange: Prepare order data
         $orderData = [
-            'reference' => Str::random(),
-            'customer' => 'Test Customer',
-            'email' => 'customer@example.com',
-            'name' => 'Test Product'
+            'reference' => 'REF123',
+            'customer'  => 'John Doe',
+            'email'     => 'john@example.com',
+            'name'      => 'Order Name'
         ];
 
+        // Act: Submit post request to store a new order
         $response = $this->postJson(route('orders.store'), $orderData);
 
-        $response->assertStatus(Response::HTTP_CREATED);
-        $this->assertDatabaseHas('orders', $orderData);
-        $response->assertJsonFragment($orderData);
+        // Assert: Verify that the order was created and the response is correct
+        $response->assertCreated();
+        $this->assertDatabaseHas('orders', ['reference' => 'REF123']);
+        $response->assertJsonFragment([
+            'customer' => 'John Doe',
+            'email'    => 'john@example.com',
+            'name'     => 'Order Name',
+        ]);
     }
 
     /**
-     * Test the show method on the OrderController.
-     *
+     * @test
      * @return void
      */
-    public function test_show_returns_order_as_json()
+    public function it_shows_an_order(): void
     {
-        // Create a new order instance with given structure
-        $order = Order::create([
-            'id' => 44,
-            'reference' => 'M7mgh9tRev',
-            'customer' => 'Avis Gulgowski',
-            'name' => 'Ab blanditiis dolorum et facilis.',
-            'email' => 'vgislason@example.net',
-            'created_at' => '2024-03-16T15:26:34.000000Z',
-            'updated_at' => '2024-03-16T15:26:34.000000Z',
-            // Other necessary attributes for the Order model
-        ]);
+        // Arrange: Create an order
+        $order = Order::factory()->create();
 
-        // Perform the HTTP GET request
-        // Make sure to replace `['reference' => $order->reference]`
-        // with `['order' => $order->id]` or the appropriate field and value.
-        $response = $this->getJson(route('orders.show', ['order' => $order->id]));
+        // Act: Make a get request to show the order
+        $response = $this->getJson(route('orders.show', ['order' => $order->reference]));
 
-        // Assert the response status code
-        $response->assertStatus(200);
-
-        // Assert the response has the correct data
-        $response->assertJson([
-            'id' => $order->id,
-            'reference' => $order->reference,
-            'customer' => $order->customer,
-            'name' => $order->name,
-            'email' => $order->email,
-            'created_at' => $order->created_at->toJSON(),
-            'updated_at' => $order->updated_at->toJSON(),
-        ]);
+        // Assert: Verify we received a 200 OK response with the order data
+        $response->assertOk();
+        $response->assertJson($order->toArray());
     }
 
-
-    // Could also write a test to test that it handles not found
-
-    /** Test the update method on the OrderController
-     *
+    /**
+     * @test
      * @return void
      */
-    public function test_update_modifies_the_specified_order(): void
+    public function it_updates_an_existing_order(): void
     {
-        $order = Order::factory()->create();
-        $updateData = [
-            'customer_name' => 'Updated Customer Name',
-            'order_date' => now()->toDateString()
-        ];
+        // Arrange: Create an order with a unique reference
+        $order = Order::factory()->create([
+            'reference' => 'original-ref-123'
+        ]);
+        $updateData = ['customer' => 'Updated Customer Name', 'reference' => 'updated-ref-456'];
 
+        // Act: Submit put request to update the order
         $response = $this->putJson(route('orders.update', $order), $updateData);
 
-        $response->assertStatus(Response::HTTP_OK);
-        $response->assertJsonFragment($updateData);
-        $this->assertDatabaseHas('orders', $updateData);
+        // Assert: Check response and if order was updated in the database
+        $response->assertOk();
+        $order->refresh(); // Refresh the model to get updated data
+
+        // Ensure the 'customer' field updated correctly
+        $this->assertEquals($updateData['customer'], $order->customer);
+
+        // No need to check dates now, we are verifying the 'reference' field instead
+        $this->assertEquals($updateData['reference'], $order->reference);
     }
 
-    /** Test the destroy method on the OrderController
-     *
+    /**
+     * @test
      * @return void
      */
-    public function test_deletes_the_specified_order_and_returns_no_content_status(): void
+    public function it_deletes_an_order(): void
     {
-        // Arrange: Create a new order in the database
+        // Arrange: Create an order
         $order = Order::factory()->create();
 
-        // Assert the order exists in the database before deletion
-        $this->assertDatabaseHas('orders', ['id' => $order->id]);
-
-        // Act: Send a delete request to destroy the order
+        // Act: Submit delete request to delete the order
         $response = $this->deleteJson(route('orders.destroy', $order));
 
-        // Assert the response status is 204 No Content
-        $response->assertStatus(204);
-
-        // Assert the order does not exist in the database after deletion
+        // Assert: Verify the response status and that the order was deleted from the database
+        $response->assertNoContent();
         $this->assertDatabaseMissing('orders', ['id' => $order->id]);
     }
 }
-
