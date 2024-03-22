@@ -12,7 +12,9 @@
 * I looked through the receiving an order part of the instructions on the tech task and made sure I included the correct restrictions where needed.
 
 **Commands that will be helpful:**
+
 Php artisan migrate
+
 Php artisan migrate:rollback
 
 **Always make sure you migrate before seeding!**
@@ -20,9 +22,12 @@ Php artisan migrate:rollback
 I then worked on creating the factories and seeders. I could’ve just used seeders but I didn’t want to repeat myself and wanted the data to be easy to maintain so I created the factories to create fake data to put in the database and the seeders use the factories and not manually enter data into the database.
 
 **Commands that will be helpful:**
+
 Php artisan db:seed
 
 * I created the OrderControllerTest to test the methods within the OrderController. These can be run using the terminal command: php artisan test —filter OrderControllerTest
+
+_To run the tests:_ php artisan test —filter OrderControllerTest
 
 #### I then created the OrderController to handle the logic that was requested.
 * Index method is to return a list of orders
