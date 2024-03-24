@@ -59,36 +59,19 @@ class OrderController extends Controller
      * Update an existing order
      *
      * @param Request $request
-     * @param Order $order
+     * @param $reference
      * @return JsonResponse
      */
-    public function update(Request $request, Order $order): JsonResponse
+    public function update(Request $request, $reference): JsonResponse
     {
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'customer' => 'required|max:255',
-            'reference' => 'required|string',
-        ]);
+        // Find the order by reference
+        $order = Order::where('reference', $reference)->firstOrFail();
 
-        try {
-            // Update the order with validated data
-            $order->update($validatedData);
+        // Apply the updates to the order
+        $order->update($request->all());
 
-            // Return the updated order with a 200 OK status code
-            return response()->json($order);
-        } catch (ValidationException $e) {
-            // Handle the exception if validation fails
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) {
-            // Handle any other exception
-            return response()->json([
-                'message' => 'Error updating the order',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        // Return a successful response, such as:
+        return response()->json(['message' => 'Order updated successfully'], 200);
     }
 
     /**

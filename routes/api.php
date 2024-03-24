@@ -31,8 +31,8 @@ Route::prefix('orders')->group(function () {
     // GET route to show a specific order by its reference
     Route::get('/{order}', [OrderController::class, 'show'])->name('orders.show');
 
-    // PUT/PATCH route to update a specific order by reference
-    Route::match(['put', 'patch'], '/{order}', [OrderController::class, 'update'])->name('orders.update');
+    // PUT route to update a specific order by reference
+    Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
 
     // DELETE route to delete a specific order by ID
     Route::delete('/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');

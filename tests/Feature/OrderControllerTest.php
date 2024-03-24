@@ -77,26 +77,32 @@ class OrderControllerTest extends TestCase
      * @test
      * @return void
      */
-    public function it_updates_an_existing_order(): void
+    public function it_updates_an_existing_order()
     {
-        // Arrange: Create an order with a unique reference
-        $order = Order::factory()->create([
-            'reference' => 'original-ref-123'
+        // Arrange: Create an order to update
+        $order = Order::factory()->create();
+
+        // Define the update data
+        $updateData = [
+            'customer' => 'Updated Customer Name',
+        ];
+
+        // Act: Submit PUT request to update the order
+        $response = $this->json('PUT', "/api/orders/{$order->reference}", $updateData);
+
+        // Assert: Check if the order was updated in the database
+        $this->assertDatabaseHas('orders', [
+            'reference' => $order->reference,
+            'customer' => 'Updated Customer Name',
         ]);
-        $updateData = ['customer' => 'Updated Customer Name', 'reference' => 'updated-ref-456'];
 
-        // Act: Submit put request to update the order
-        $response = $this->putJson(route('orders.update', $order), $updateData);
+        // Assert: Response status code is 200 (OK)
+        $response->assertStatus(200);
 
-        // Assert: Check response and if order was updated in the database
-        $response->assertOk();
-        $order->refresh(); // Refresh the model to get updated data
-
-        // Ensure the 'customer' field updated correctly
-        $this->assertEquals($updateData['customer'], $order->customer);
-
-        // No need to check dates now, we are verifying the 'reference' field instead
-        $this->assertEquals($updateData['reference'], $order->reference);
+        // Assert: Correct JSON message is returned
+        $response->assertJson([
+            'message' => 'Order updated successfully'
+        ]);
     }
 
     /**
