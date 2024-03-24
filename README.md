@@ -49,8 +49,8 @@ _To run the tests:_ php artisan test —filter OrderControllerTest
     // GET route to show a specific order by reference
     Route::get('/{order}', [OrderController::class, 'show'])->name('orders.show');
 
-    // PUT/PATCH route to update a specific order by reference
-    Route::match(['put', 'patch'], '/{order}', [OrderController::class, 'update'])->name('orders.update');
+    // PUT route to update a specific order by reference
+    Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
 
     // DELETE route to delete a specific order by ID
     Route::delete('/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');});`
@@ -64,3 +64,9 @@ http://127.0.0.1:8000/api/orders/{id}
 #### In Postman make sure you have added these headers:
 * Content-Type: application/json
 * Accept: application/json
+
+### Some functionalities that could be added: 
+
+* Create an ItemController with the idea of possibly needing to update the quantity or cost or deleting an item. 
+I would also have created the appropriate tests for the ItemController as well.
+* Create it so that you can test changes in the browser and not just on Postman or through tests. 
