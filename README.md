@@ -31,6 +31,7 @@ _To run the tests:_ php artisan test —filter OrderControllerTest
 
 #### I then created the OrderController to handle the logic that was requested.
 * Index method is to return a list of orders
+* Store method is to store an order
 * Show method is to show a specific order
 * Update method is to update a specific method
 * Destroy method is to delete a specific order
